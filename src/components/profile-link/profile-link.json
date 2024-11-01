@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_profile_link_profile_link_s",
+  "info": {
+    "displayName": "ProfileLink ",
+    "icon": "code"
+  },
+  "options": {},
+  "attributes": {
+    "network": {
+      "type": "string",
+      "required": true
+    },
+    "username": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string",
+      "required": true
+    }
+  }
+}

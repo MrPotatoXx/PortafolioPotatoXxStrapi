@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_location_locations",
+  "info": {
+    "displayName": "Location",
+    "icon": "earth"
+  },
+  "options": {},
+  "attributes": {
+    "addres": {
+      "type": "string",
+      "required": true
+    },
+    "postalCode": {
+      "type": "biginteger",
+      "required": true
+    },
+    "city": {
+      "type": "string"
+    },
+    "countryCode": {
+      "type": "string",
+      "required": true
+    },
+    "region": {
+      "type": "string"
+    }
+  }
+}
