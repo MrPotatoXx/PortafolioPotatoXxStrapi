@@ -4,7 +4,8 @@
   "info": {
     "singularName": "education",
     "pluralName": "educations",
-    "displayName": "Education"
+    "displayName": "Education",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -82,7 +83,7 @@
         }
       },
       "type": "text",
-      "required": true
+      "required": false
     }
   }
 }
