@@ -1,0 +1,70 @@
+name: Deploy Strapi API
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3. Install pnpm globally
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: pnpm install
+
+      # 5. Build project
+      - name: Build project
+        run: pnpm run build
+
+      # 6. Create .env file locally
+      - name: Create .env file
+        run: |
+          echo "APP_KEYS=${{ secrets.APP_KEYS }}" > .env
+          echo "API_TOKEN_SALT=${{ secrets.API_TOKEN_SALT }}" >> .env
+          echo "ADMIN_JWT_SECRET=${{ secrets.ADMIN_JWT_SECRET }}" >> .env
+          echo "TRANSFER_TOKEN_SALT=${{ secrets.TRANSFER_TOKEN_SALT }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "DATABASE_CLIENT=${{ secrets.DATABASE_CLIENT }}" >> .env
+          echo "DATABASE_HOST=${{ secrets.DATABASE_HOST }}" >> .env
+          echo "DATABASE_PORT=${{ secrets.DATABASE_PORT }}" >> .env
+          echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+          echo "DATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }}" >> .env
+          echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+          echo "DATABASE_SSL=${{ secrets.DATABASE_SSL }}" >> .env
+          echo "HOST=${{ secrets.HOST }}" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
+
+      - name: Set permissions for .strapi-updater.json
+        run: chmod 644 .strapi-updater.json
+
+      - name: Deploy files to server via SCP
+        run: |
+          # Crear archivo tar excluyendo .strapi-updater.json y node_modules
+          tar --exclude='./.strapi-updater.json' --exclude='./node_modules' -czf deploy.tar.gz .
+          
+          # Usar scp para transferir el archivo comprimido
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -P ${{ secrets.SERVER_PORT }} deploy.tar.gz ${SERVER_USER}@${SERVER_HOST}:/srv/www/api/
+
+      - name: Install dependencies on the server
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "cd /srv/www/api && pnpm install"
+
+      - name: Start Strapi with PM2
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "pm2 start pnpm --name strapi -- run start"
